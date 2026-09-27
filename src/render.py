@@ -294,7 +294,8 @@ def render_clip(clip):
     halant = _ends_halant(PIECES[-1])                       # त्/क्/प् final -> preserve stop burst
     final = _stitch(bseg, GAPS, fric=fric, halant=halant)
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
-    sf.write(out + ".part.wav", final, SR); os.replace(out + ".part.wav", out)   # atomic: no half-written wav to skip on resume
+    tmp = f"{out}.{os.getpid()}.part.wav"      # per-process temp name: parallel workers may render the same clip
+    sf.write(tmp, final, SR); os.replace(tmp, out)   # atomic: no half-written wav to skip on resume
     return {"id": clip["id"], "dur": round(len(final)/SR, 3), "pieces": len(PIECES), "seed": seed, "out": out}
 
 clips = json.load(open(a.shard, encoding="utf-8"))
